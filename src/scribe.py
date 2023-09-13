@@ -3,8 +3,7 @@ import whisper
 from openpyxl import load_workbook
 from azure.storage.blob import BlobServiceClient
 
-
-DIR_TO_PARSE = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\mastering-ma-offers\\video"
+DIR_TO_PARSE = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\mastering-saas-offers\\video"
 
 BLOB_STORE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=st2yegwmcouglsa;AccountKey=fdLmUY5HiL4AkWHcZGB7AWj69/SMwSDjGS1iIcf+URrklahp9YZV5KEUZFmv2gbcia1JudMm8/Qi+AStC7x7bA==;EndpointSuffix=core.windows.net"
 BLOB_STORE_CONTAINER_NAME = "mtm-video-scripts"
@@ -50,22 +49,24 @@ def process_a_video(file_name_root, full_path):
     # transcribe the audio, add meta data, and clean the output
     transcription = transcribe_audio(full_path)
     transcription = add_meta_data(content_category=playlist_name, video_title=title, youtube_video_link=url, transcription=transcription)
-    transcription = clean_transcription(transcription)
+    transcription = clean_up_transcription(transcription)
     
     txt_file_name = file_name_prefix + file_name_root + '.txt'
     
     path_to_txt_file = save_file(txt_file_name, transcription)
     upload_to_blob(txt_file_name, path_to_txt_file)
 
-def clean_transcription(transcription):
+def clean_up_transcription(transcription):
     print("Cleaning transcription")
 
+    transcription = transcription.replace("aka.ms slash mastering the marketplace", "https://aka.ms/masteringthemarketplace")
     transcription = transcription.replace("SAS", "SaaS")
     transcription = transcription.replace("Star ", "Starr ")
     transcription = transcription.replace("Star.", "Starr.")
     
     return transcription
 
+# uses a specially formatted excel file to add meta data to the transcription
 def get_metadata_from_spreadsheet(file_name):
     print("Getting metadata from spreadsheet")
 
@@ -92,7 +93,6 @@ def get_metadata_from_spreadsheet(file_name):
             
     return playlist_name, title, youtube_video_link, file_name_prefix
 
-# uses a specially formatted excel file to add meta data to the transcription
 def add_meta_data(content_category, video_title, youtube_video_link, transcription):
     print("Adding metadata to transcription")
     
