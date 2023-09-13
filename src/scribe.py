@@ -1,7 +1,7 @@
 import os
 import whisper
 from openpyxl import load_workbook
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from azure.storage.blob import BlobServiceClient
 
 
 DIR_TO_PARSE = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\mastering-ma-offers\\video"
@@ -53,15 +53,13 @@ def add_meta_data(file_name, transcription):
     ws = wb.active
 
     for row in ws.iter_rows(min_col=1, max_col=5, values_only=True):
-        
         # match on the filename root in col 5
         if row[4] == file_name:
             title = row[2]
             youtube_video_link = row[3]
 
-            print("Got it: " + title + " " + youtube_video_link)
-
             # add the title to the top of the transcription
+            transcription = "Content: " + transcription
             transcription = "URL: " + youtube_video_link + "\n\n" + transcription
             transcription = "Title: " + title + "\n\n" + transcription
 
@@ -91,16 +89,18 @@ def save_file(file_name, transcript):
 def upload_to_blob(file_name_root, file_path):
     print("Uploading blob: " + file_name_root)
 
+    # get the blob client
     blob_service_client = BlobServiceClient.from_connection_string(BLOB_STORE_CONNECTION_STRING)
     container_client = blob_service_client.get_container_client(BLOB_STORE_CONTAINER_NAME)
-
-    # Upload the file
     blob_client = container_client.get_blob_client(file_name_root)
+
+    # delete any existing blob
+    if blob_client.exists():
+        blob_client.delete_blob()
+
+    # upload the file
     with open(file_path, "rb") as f:
         blob_client.upload_blob(f)
-
-    
-
 
 def DEBUG_upload_files_to_blob():
     for dirpath, dirnames, filenames in os.walk(OUTPUT_DIR):
@@ -113,5 +113,5 @@ def DEBUG_upload_files_to_blob():
                 upload_to_blob(file_name_root, full_path)
 
 if __name__ == "__main__":
-    # process_videos(DIR_TO_PARSE, OUTPUT_DIR)
-    DEBUG_upload_files_to_blob()
+    process_videos(DIR_TO_PARSE, OUTPUT_DIR)
+    # DEBUG_upload_files_to_blob()
