@@ -5,8 +5,8 @@ from azure.storage.blob import BlobServiceClient
 
 DIR_TO_PARSE = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\mastering-saas-offers\\video"
 
-BLOB_STORE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=st2yegwmcouglsa;AccountKey=fdLmUY5HiL4AkWHcZGB7AWj69/SMwSDjGS1iIcf+URrklahp9YZV5KEUZFmv2gbcia1JudMm8/Qi+AStC7x7bA==;EndpointSuffix=core.windows.net"
-BLOB_STORE_CONTAINER_NAME = "mtm-video-scripts"
+BLOB_STORE_CONNECTION_STRING = ""
+BLOB_STORE_CONTAINER_NAME = ""
 EXCEL_META_DATA_FILE_PATH = "C:\\Users\\dastarr\\Microsoft\Mastering the Marketplace - Documents\\on-demand\\video-meta-data.xlsx"
 TRANSCRIPT_OUTPUT_DIR = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\transcripts"
 
