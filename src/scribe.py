@@ -5,7 +5,6 @@ from openpyxl import load_workbook
 
 ROOT_DIR="C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand"
 CSV_META_DATA_FILE_PATH = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\video-meta-data.csv"
-EXCEL_META_DATA_FILE_PATH = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\video-meta-data1.xlsx"
 TRANSCRIPT_OUTPUT_DIR = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\transcripts"
 
 whisper_model = None
