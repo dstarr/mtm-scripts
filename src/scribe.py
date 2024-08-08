@@ -1,5 +1,4 @@
-import os
-import csv
+import os, csv
 import whisper
 from openpyxl import load_workbook
 
@@ -25,10 +24,18 @@ def get_files_to_process():
         csvreader = csv.DictReader(csvfile)
         for row in csvreader:
             file_info = {
+                "learning_path": row["Learning Path"],
                 "title": row["Title"],
                 "file_name": row["Filename"],
                 "url": row["URL"]
             }
+
+            # skip incomplete files or those intentionally marked to skip
+            skip_this_file = row["Skip"]
+            if file_info["file_name"] == "" or skip_this_file == "Yes":
+                continue
+
+            # add this file to the list of files to process
             files_to_process.append(file_info)
     
     return files_to_process
@@ -37,14 +44,15 @@ def process_files(files_to_process):
     print("process_files")
     
     for file in files_to_process:
-        file_name = file.get('file_name')
-        title = file.get('title')
-        url = file.get('url')
+        learning_path = file['learning_path']
+        file_name = file['file_name']
+        title = file['title']
+        url = file['url']
 
         full_path = find_file(file_name, ROOT_DIR)
 
         print ("====================================")
-        print("Processing: " + file_name)
+        print("Processing: " + full_path)
 
         if full_path is None:
             print("File not found: " + file_name)
@@ -55,18 +63,17 @@ def process_files(files_to_process):
         transcript = clean_up_transcription(transcript)
 
         transcript_file_name = file_name + '.txt'
-        save_file(transcript_file_name, transcript)
+
+        save_file(transcript_file_name, learning_path, transcript)
 
 def transcribe_audio(path):
-    print("transcribe_audio")
-    
+
     result = whisper_model.transcribe(path)
     text = result["text"]
     
     return text
 
 def clean_up_transcription(transcription):
-    print("Cleaning transcription")
 
     transcription = transcription.replace("aka.ms slash mastering the marketplace", "https://aka.ms/masteringthemarketplace")
     transcription = transcription.replace("SAS", "SaaS")
@@ -83,11 +90,14 @@ def add_meta_data(video_title, url, transcription):
 
     return transcription
 
-def save_file(file_name, transcript):
-    print("Saving file: " + file_name)
+def save_file(file_name, learning_path, transcript):
     
-    # get the destination file info
-    txt_file_path = os.path.join(TRANSCRIPT_OUTPUT_DIR, file_name)
+    # create the output directory if it doesn't exist
+    if not os.path.exists(os.path.join(TRANSCRIPT_OUTPUT_DIR, learning_path)):
+        os.makedirs(os.path.join(TRANSCRIPT_OUTPUT_DIR, learning_path))
+
+    # get the destination file path
+    txt_file_path = os.path.join(TRANSCRIPT_OUTPUT_DIR, learning_path, file_name)
 
     # delete any existing file
     if os.path.isfile(txt_file_path):
