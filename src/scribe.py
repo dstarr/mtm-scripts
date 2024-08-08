@@ -1,12 +1,62 @@
 import os
+import csv
 import whisper
 from openpyxl import load_workbook
 
-DIR_TO_PARSE="C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\mastering-saas-accelerator\\video"
-EXCEL_META_DATA_FILE_PATH = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\video-meta-data.xlsx"
+ROOT_DIR="C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand"
+CSV_META_DATA_FILE_PATH = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\video-meta-data.csv"
+EXCEL_META_DATA_FILE_PATH = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\video-meta-data1.xlsx"
 TRANSCRIPT_OUTPUT_DIR = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\transcripts"
 
 whisper_model = None
+
+def find_file(file_name, directory_to_search):
+    for root, dirs, files in os.walk(directory_to_search):
+        if file_name in files:
+            return os.path.join(root, file_name)
+    return None
+
+def get_files_to_process():
+
+    print("get_files_to_process")
+
+    files_to_process = []
+    
+    with open(CSV_META_DATA_FILE_PATH, mode='r') as csvfile:
+        csvreader = csv.DictReader(csvfile)
+        for row in csvreader:
+            file_info = {
+                "title": row["Title"],
+                "file_name": row["Filename"],
+                "url": row["URL"]
+            }
+            files_to_process.append(file_info)
+    
+    return files_to_process
+
+def process_files(files_to_process):
+    print("process_files")
+    
+    for file in files_to_process:
+        file_name = file.get('file_name')
+        title = file.get('title')
+        url = file.get('url')
+
+        full_path = find_file(file_name, ROOT_DIR)
+
+        print ("====================================")
+        print("Processing: " + file_name)
+
+        if full_path is None:
+            print("File not found: " + file_name)
+            continue
+
+        transcript = transcribe_audio(full_path)
+        transcript = add_meta_data(title, url, transcript)
+        transcript = clean_up_transcription(transcript)
+
+        transcript_file_name = file_name + '.txt'
+        save_file(transcript_file_name, transcript)
 
 def transcribe_audio(path):
     print("transcribe_audio")
@@ -15,39 +65,6 @@ def transcribe_audio(path):
     text = result["text"]
     
     return text
-
-def process_videos(input_path):
-    items = os.listdir(input_path)
-    files = [item for item in items 
-             if os.path.isfile(os.path.join(input_path, item))
-             and item.endswith('.mp4')]
-
-    for file_name in files:
-        full_path = os.path.join(input_path, file_name)
-        process_a_video(file_name, full_path)
-
-def process_a_video(file_name, full_path):
-    
-    print ("====================================")
-    print ("FILE NAME:\t" + file_name)
-
-    # meta data from the spreadsheet
-    _, title, url = get_metadata_from_spreadsheet(file_name)
-
-    if title is None:
-        print("NO METADATA FOUND FOR: " + file_name)
-        return
-
-    print("TITLE:\t\t" + title)
-    
-    # # transcribe the audio, add meta data, and clean the output
-    transcription = transcribe_audio(full_path)
-    transcription = add_meta_data(title, url, transcription)
-    transcription = clean_up_transcription(transcription)
-    
-    transcript_file_name = file_name + '.txt'
-    
-    save_file(transcript_file_name, transcription)
 
 def clean_up_transcription(transcription):
     print("Cleaning transcription")
@@ -59,28 +76,6 @@ def clean_up_transcription(transcription):
     transcription = transcription.replace("Stark", "Starr")
     
     return transcription
-
-# # uses a specially formatted excel file to add meta data to the transcription
-def get_metadata_from_spreadsheet(file_name):
-
-    learning_path = None
-    title = None
-    url = None
-
-    # load the excel file
-    wb = load_workbook(filename=EXCEL_META_DATA_FILE_PATH)
-    ws = wb.active
-
-    for row in ws.iter_rows(min_col=1, max_col=6, values_only=True):
-        if row[2] == file_name:
-            learning_path = row[0]
-            title = row[1]
-            url = row[3]
-            break
-    
-    wb.close()
-            
-    return learning_path, title, url
 
 def add_meta_data(video_title, url, transcription):
     
@@ -106,5 +101,9 @@ def save_file(file_name, transcript):
     return txt_file_path
 
 if __name__ == "__main__":
+    
     whisper_model = whisper.load_model("base")
-    process_videos(DIR_TO_PARSE)
+
+    files_to_process = get_files_to_process()
+
+    process_files(files_to_process)
