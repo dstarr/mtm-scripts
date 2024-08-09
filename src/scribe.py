@@ -52,11 +52,12 @@ def process_files(files_to_process):
         full_path = find_file(file_name, ROOT_DIR)
 
         print ("====================================")
-        print("Processing: " + full_path)
 
-        if full_path is None:
-            print("File not found: " + file_name)
+        if full_path is None: # can't find the file
+            print("File not found: " + learning_path + " : " + file_name)
             continue
+
+        print("Processing: " + full_path)
 
         transcript = transcribe_audio(full_path)
         transcript = add_meta_data(title, url, transcript)
@@ -114,5 +115,8 @@ if __name__ == "__main__":
     whisper_model = whisper.load_model("base")
 
     files_to_process = get_files_to_process()
+    if len(files_to_process) == 0:
+        print("No files to process.")
+        exit()
 
     process_files(files_to_process)
