@@ -57,7 +57,7 @@ def process_files(files_to_process):
             print("File not found: " + learning_path + " : " + file_name)
             continue
 
-        print("Processing: " + full_path)
+        print("Processing: " + title + "\n" + full_path)
 
         transcript = transcribe_audio(full_path)
         transcript = add_meta_data(title, url, transcript)
