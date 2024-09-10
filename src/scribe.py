@@ -16,13 +16,17 @@ def find_file(file_name, directory_to_search):
 
 def get_files_to_process():
 
-    print("get_files_to_process")
-
     files_to_process = []
     
     with open(CSV_META_DATA_FILE_PATH, mode='r') as csvfile:
         csvreader = csv.DictReader(csvfile)
         for row in csvreader:
+
+            # skip files that are not marked for transcription
+            transcribe_this_file = bool(row["Transcribe"])
+            if not transcribe_this_file:
+                continue
+
             file_info = {
                 "learning_path": row["Learning Path"],
                 "title": row["Title"],
@@ -30,18 +34,12 @@ def get_files_to_process():
                 "url": row["URL"]
             }
 
-            # skip incomplete files or those intentionally marked to skip
-            skip_this_file = row["Skip"]
-            if file_info["file_name"] == "" or skip_this_file == "Yes":
-                continue
-
             # add this file to the list of files to process
             files_to_process.append(file_info)
     
     return files_to_process
 
 def process_files(files_to_process):
-    print("process_files")
     
     for file in files_to_process:
         learning_path = file['learning_path']
@@ -63,7 +61,8 @@ def process_files(files_to_process):
         transcript = add_meta_data(title, url, transcript)
         transcript = clean_up_transcription(transcript)
 
-        transcript_file_name = file_name + '.txt'
+        transcript_file_name = file_name.removesuffix(".mp4")
+        transcript_file_name += '.txt'
 
         save_file(transcript_file_name, learning_path, transcript)
 
