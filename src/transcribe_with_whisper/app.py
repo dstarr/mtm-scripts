@@ -1,10 +1,30 @@
-import os, csv
+import os
+import csv
 import whisper
-from openpyxl import load_workbook
+from dotenv import load_dotenv
+# from openpyxl import load_workbook
 
-ROOT_DIR="C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand"
-CSV_META_DATA_FILE_PATH = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\video-meta-data.csv"
-TRANSCRIPT_OUTPUT_DIR = "C:\\Users\\dastarr\\Microsoft\\Mastering the Marketplace - Documents\\on-demand\\transcripts"
+load_dotenv()
+
+ROOT_DIR = os.getenv("ROOT_DIR")
+CSV_META_DATA_FILE_PATH = os.getenv("CSV_META_DATA_FILE_PATH")
+TRANSCRIPT_OUTPUT_DIR = os.getenv("TRANSCRIPT_OUTPUT_DIR")
+
+print("===========================================================")
+
+if ROOT_DIR is None:
+    raise ValueError("Environment variable ROOT_DIR is not set")
+
+if CSV_META_DATA_FILE_PATH is None:
+    raise ValueError("Environment variable CSV_META_DATA_FILE_PATH is not set")
+
+if TRANSCRIPT_OUTPUT_DIR is None:
+    raise ValueError("Environment variable TRANSCRIPT_OUTPUT_DIR is not set")
+
+print(f"ROOT_DIR {ROOT_DIR}")
+print(f"CSV_META_DATA_FILE_PATH {CSV_META_DATA_FILE_PATH}")
+print(f"TRANSCRIPT_OUTPUT_DIR {TRANSCRIPT_OUTPUT_DIR}")
+print("===========================================================")
 
 whisper_model = None
 
