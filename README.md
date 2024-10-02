@@ -1,3 +1,3 @@
-# Video transcription with Whisper
+# MTM Scripts
 
-A script to create transcripts from MP4 videos using the OpenAI Whisper library
+Scripts to help manage Mastering the Marketplace content
