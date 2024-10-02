@@ -1,25 +1,21 @@
 import os
 from dotenv import load_dotenv
-from azure.ai.textanalytics import TextAnalyticsClient
+from azure.ai.textanalytics import TextAnalyticsClient, AbstractiveSummaryAction
 from azure.core.credentials import AzureKeyCredential
 
 # Example method for summarizing text
 def create_summary(client, content):
-    from azure.core.credentials import AzureKeyCredential
-    from azure.ai.textanalytics import (
-        TextAnalyticsClient,
-        ExtractiveSummaryAction
-    ) 
-
+    
     poller = client.begin_analyze_actions(
         documents=[content],
         actions=[
-            ExtractiveSummaryAction(max_sentence_count=3)
+            AbstractiveSummaryAction(max_sentence_count=3)
         ],
         language="en"
     )
 
     document_results = poller.result()
+    
     for result in document_results:
         extract_summary_result = result[0]  # first document, first result
         
@@ -29,7 +25,7 @@ def create_summary(client, content):
             ))
             return None
         else:
-            return " ".join([sentence.text for sentence in extract_summary_result.sentences])
+            return extract_summary_result.summaries[0].text
 
 def find_txt_files(directory):
     
